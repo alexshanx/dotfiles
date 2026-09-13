@@ -6,7 +6,7 @@ set -eu
 # Commit hook hash: {{ include "../.githooks/pre-commit" | sha256sum }}
 # Push hook hash: {{ include "../.githooks/pre-push" | sha256sum }}
 
-cd {{ joinPath .chezmoi.sourceDir ".." | quote }}
+cd "{{ .chezmoi.workingTree }}"
 current_hooks_path=$(git config --get core.hooksPath || true)
 if [ -n "$current_hooks_path" ] && [ "$current_hooks_path" != ".githooks" ]; then
   echo "Hook setup blocked: review the existing core.hooksPath before replacing it." >&2
