@@ -22,4 +22,34 @@ path = '''(?:^|/)(?:private_)?dot_(?:codex|claude)/'''
 id = "local-only-file"
 description = "Credentials and local application state must not be published"
 regex = '''(?s).+'''
-path = '''(?:^|/)(?:(?:private_)?dot_codex/|(?:private_)?dot_claude/(?:settings[^/]*|auth[^/]*|credentials[^/]*|history[^/]*|projects/|sessions/)|(?:private_)?dot_config/chezmoi/|(?:private_)?dot_(?:npmrc|netrc|env)(?:\.|$)|\.env(?:\.|$)|(?:private_)?dot_ssh/(?:private_)?(?:id_[^/]*|known_hosts[^/]*|authorized_keys))'''
+path = '''(?:^|/)(?:(?:private_)?dot_codex/|(?:private_)?dot_claude/|(?:private_)?dot_config/chezmoi/|(?:private_)?dot_(?:npmrc|netrc|env)(?:\.|$)|\.env(?:\.|$)|(?:private_)?dot_ssh/(?:private_)?(?:id_[^/]*|known_hosts[^/]*|authorized_keys))'''
+
+[[rules.allowlists]]
+description = "Only shared instructions, skills, and create-only defaults are permitted"
+paths = [
+  '''^home/dot_claude/CLAUDE\.md$''',
+  '''^home/dot_claude/skills/''',
+  '''^home/dot_codex/create_private_config\.toml$''',
+  '''^home/dot_claude/create_private_settings\.json$''',
+]
+
+[[rules]]
+id = "initializer-content"
+description = "Initialization files may contain only the approved default content"
+regex = '''(?s).+'''
+path = '''^home/dot_(?:codex/create_private_config\.toml|claude/create_private_settings\.json)$'''
+
+[[rules.allowlists]]
+regexTarget = "match"
+regexes = [
+  '''\A\Qcommit_attribution = ""\E\n?\z''',
+  '''\A\Q{
+  "theme": "auto",
+  "agentPushNotifEnabled": true,
+  "inputNeededNotifEnabled": true,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
+}\E\n?\z''',
+]

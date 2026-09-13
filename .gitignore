@@ -26,11 +26,13 @@ npm-debug.log*
 .claude/settings.local.json
 
 # Chezmoi source paths for machine-specific and sensitive files
-/home/dot_codex/
+/home/dot_codex/*
+!/home/dot_codex/create_private_config.toml
 /home/private_dot_codex/
 /home/dot_claude/*
 !/home/dot_claude/CLAUDE.md
 !/home/dot_claude/skills/
+!/home/dot_claude/create_private_settings.json
 /home/private_dot_claude/
 /home/dot_config/chezmoi/
 /home/private_dot_config/chezmoi/

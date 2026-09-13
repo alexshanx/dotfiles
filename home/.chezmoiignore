@@ -4,11 +4,14 @@
 
 # AI application settings, credentials, sessions, and runtime state stay local.
 .codex/**
+!.codex
+!.codex/config.toml
 .claude/**
 !.claude
 !.claude/CLAUDE.md
 !.claude/skills
 !.claude/skills/**
+!.claude/settings.json
 .config/chezmoi/**
 .ssh/id_*
 .ssh/known_hosts*

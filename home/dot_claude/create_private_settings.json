@@ -1,0 +1,9 @@
+{
+  "theme": "auto",
+  "agentPushNotifEnabled": true,
+  "inputNeededNotifEnabled": true,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
+}

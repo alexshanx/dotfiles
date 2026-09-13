@@ -96,10 +96,31 @@ export WORK_SPECIFIC_VAR="value"
 ```
 
 Codex configuration and Claude settings, credentials, sessions, and runtime data
-stay local. Only Claude's `CLAUDE.md` and skill links are managed. Configure AI
-application preferences locally; do not use `chezmoi add --force` to capture
-ignored files. Removing these settings from the source does not delete existing
-destination files.
+stay local. Claude's `CLAUDE.md` and skill links are managed normally. Two native
+chezmoi `create_` files provide initial preferences when configuration is missing:
+
+- Claude: automatic theme, agent and input notifications enabled, and empty
+  commit/PR attribution.
+- Codex: `commit_attribution = ""`.
+
+Existing file contents are left unchanged, even if they contain different
+preferences. Missing files are created with mode `0600`; no merge script or
+Python/TOML dependency is needed. Later changes to these defaults affect only
+machines where the files do not exist. To initialize just these targets:
+
+```bash
+chezmoi apply --parent-dirs ~/.claude/settings.json ~/.codex/config.toml
+```
+
+Do not use `chezmoi add` or `re-add` on these configuration files: initialization
+does not make their later contents safe to publish. Edit the two source defaults
+directly. Git ignores ordinary configuration source files and allows only the
+two `create_private_` initializers. `re-add` leaves these create-only defaults
+unchanged. Gitleaks permits only their approved default content and blocks
+ordinary configuration files if they are forcibly staged.
+Intentional default changes require reviewing and updating the matching
+`initializer-content` allowlist in `.gitleaks.toml`. Other files are still subject
+to the broader secret/privacy rules, which cannot detect every kind of PII.
 
 `.chezmoiignore` filters destination paths; `.gitignore` filters source paths.
 Neither is a security boundary: forced adds and already tracked files can bypass
