@@ -2,6 +2,22 @@
 .zshrc.local
 .config/git/gitlab.local.config
 
+# AI application settings, credentials, sessions, and runtime state stay local.
+.codex/**
+.claude/**
+!.claude
+!.claude/CLAUDE.md
+!.claude/skills
+!.claude/skills/**
+.config/chezmoi/**
+.ssh/id_*
+.ssh/known_hosts*
+.ssh/authorized_keys
+.env
+.env.*
+.npmrc
+.netrc
+
 # Backup files
 *.backup
 *~

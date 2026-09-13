@@ -69,7 +69,9 @@ Commit from the source repository:
 ```bash
 chezmoi cd
 git status
-git add -A
+git add <reviewed-source-files>
+git diff --cached
+gitleaks git --pre-commit --staged --redact .
 git commit -m "chore: update dotfiles"
 git push
 exit
@@ -92,6 +94,58 @@ Put secrets and machine-only environment variables in `~/.zshrc.local`. It is lo
 export ANTHROPIC_AUTH_TOKEN="your-token"
 export WORK_SPECIFIC_VAR="value"
 ```
+
+Codex configuration and Claude settings, credentials, sessions, and runtime data
+stay local. Only Claude's `CLAUDE.md` and skill links are managed. Configure AI
+application preferences locally; do not use `chezmoi add --force` to capture
+ignored files. Removing these settings from the source does not delete existing
+destination files.
+
+`.chezmoiignore` filters destination paths; `.gitignore` filters source paths.
+Neither is a security boundary: forced adds and already tracked files can bypass
+ignores. Never enable automatic dotfile commits or pushes. Review each staged
+diff and resolve scanner findings before committing.
+
+### Commit and Push Protection
+
+Homebrew installs Gitleaks. On macOS, chezmoi enables this repository's native
+Git hooks during apply. To enable them manually on an existing clone:
+
+```bash
+brew install gitleaks
+chmod +x .githooks/pre-commit .githooks/pre-push
+git config --local core.hooksPath .githooks
+git config --get core.hooksPath
+gitleaks dir --config .gitleaks.toml --redact .
+```
+
+Review any existing `core.hooksPath` before replacing it. Hook installation is
+local to each clone; it does not propagate through Git.
+
+The commit hook scans staged additions. The push hook scans outgoing commits
+for every ref, including tags. For a new ref or an unavailable remote object it
+scans the full reachable history, which may block on historical findings. Remote
+ref deletions skip scanning. Missing Gitleaks or a scanner error blocks the
+operation. Hooks can be bypassed with Git options or configuration changes;
+they do not constrain an agent allowed to disable them.
+
+`.gitleaks.toml` extends the default secret rules with personal absolute home
+paths and local-only credential/application files. These rules cannot detect all
+personal information or arbitrary prose. Reports redact detected values; do not
+publish unredacted reports. Review findings rather than adding broad exceptions.
+
+Enable GitHub's server-side protection separately:
+
+1. Repository **Settings → Advanced Security → Secret Protection**: enable
+   **Secret Protection**, then **Push protection**.
+2. Personal **Settings → Code security**: ensure **Push protection for yourself**
+   is enabled.
+
+See [repository push protection](https://docs.github.com/en/code-security/how-tos/secure-your-secrets/prevent-future-leaks/enable-push-protection)
+and [personal push protection](https://docs.github.com/en/code-security/how-tos/secure-your-secrets/prevent-future-leaks/manage-user-push-protection).
+GitHub blocks supported secret patterns; these settings do not upload this
+repository's custom privacy rules to GitHub. CI runs after upload and cannot
+prevent the initial disclosure of a secret.
 
 ## 5. Manage Personal AI Skills
 

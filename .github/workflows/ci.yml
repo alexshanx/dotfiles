@@ -32,6 +32,9 @@ jobs:
       - name: ShellCheck install.sh
         run: shellcheck install.sh
 
+      - name: ShellCheck Git protection hooks
+        run: shellcheck .githooks/pre-commit .githooks/pre-push
+
       - name: ShellCheck chezmoi scripts
         run: |
           set -e

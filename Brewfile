@@ -1,6 +1,7 @@
 # CLI Tools
 brew "git"
 brew "git-lfs"
+brew "gitleaks"
 brew "gh"
 brew "awscli"
 brew "vercel"

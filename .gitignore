@@ -22,5 +22,28 @@ npm-debug.log*
 *.bak
 .history/
 
-# Claude Code machine-specific settings
+# Repository-local Claude settings
 .claude/settings.local.json
+
+# Chezmoi source paths for machine-specific and sensitive files
+/home/dot_codex/
+/home/private_dot_codex/
+/home/dot_claude/*
+!/home/dot_claude/CLAUDE.md
+!/home/dot_claude/skills/
+/home/private_dot_claude/
+/home/dot_config/chezmoi/
+/home/private_dot_config/chezmoi/
+/home/*dot_zshrc.local*
+/home/dot_config/git/gitlab.local.config*
+/home/private_dot_ssh/*id_*
+/home/private_dot_ssh/*known_hosts*
+/home/private_dot_ssh/*authorized_keys*
+/home/*dot_npmrc*
+/home/*dot_netrc*
+.env
+.env.*
+dot_env
+dot_env.*
+private_dot_env
+private_dot_env.*

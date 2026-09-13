@@ -1,0 +1,19 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/sh
+set -eu
+
+# Hook configuration hash: {{ include "../.gitleaks.toml" | sha256sum }}
+# Commit hook hash: {{ include "../.githooks/pre-commit" | sha256sum }}
+# Push hook hash: {{ include "../.githooks/pre-push" | sha256sum }}
+
+cd {{ joinPath .chezmoi.sourceDir ".." | quote }}
+current_hooks_path=$(git config --get core.hooksPath || true)
+if [ -n "$current_hooks_path" ] && [ "$current_hooks_path" != ".githooks" ]; then
+  echo "Hook setup blocked: review the existing core.hooksPath before replacing it." >&2
+  exit 1
+fi
+
+chmod +x .githooks/pre-commit .githooks/pre-push
+git config --local core.hooksPath .githooks
+echo "Dotfiles commit and push protection enabled."
+{{- end }}

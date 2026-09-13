@@ -1,0 +1,25 @@
+title = "Public dotfiles protection"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "personal-home-path"
+description = "Personal absolute home paths must remain local"
+regex = '''(?:/Users/|/home/)[A-Za-z0-9_.-]+(?:/[^\s"'`]+)?'''
+
+[[rules.allowlists]]
+description = "Root .gitignore uses /home/ for source paths, not user home directories"
+paths = ['''^\.?/?\.gitignore$''']
+
+[[rules]]
+id = "ai-project-context"
+description = "Generated AI project trust and environment context must remain local"
+regex = '''(?:\[projects\.|"autoMode"\s*:|"environment"\s*:|trust_level\s*=)'''
+path = '''(?:^|/)(?:private_)?dot_(?:codex|claude)/'''
+
+[[rules]]
+id = "local-only-file"
+description = "Credentials and local application state must not be published"
+regex = '''(?s).+'''
+path = '''(?:^|/)(?:(?:private_)?dot_codex/|(?:private_)?dot_claude/(?:settings[^/]*|auth[^/]*|credentials[^/]*|history[^/]*|projects/|sessions/)|(?:private_)?dot_config/chezmoi/|(?:private_)?dot_(?:npmrc|netrc|env)(?:\.|$)|\.env(?:\.|$)|(?:private_)?dot_ssh/(?:private_)?(?:id_[^/]*|known_hosts[^/]*|authorized_keys))'''
