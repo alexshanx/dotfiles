@@ -1,0 +1,7 @@
+# Two commits from 2026-09-03 added the Claude/Codex initializers under their
+# ordinary file names before they were renamed to create_private_*. Their
+# content is identical to the approved defaults (theme, notifications, empty
+# attribution) and carries no credentials. Ignoring them keeps the pre-push
+# full-history scan from blocking new branches and tags.
+f9f64213fe5dbbc9f3d7f881200a8240f8f09c67:home/dot_codex/config.toml:local-only-file:1
+04aca85cc8929ab2b5c203b531994de8c4d37d55:home/dot_claude/settings.json:local-only-file:1

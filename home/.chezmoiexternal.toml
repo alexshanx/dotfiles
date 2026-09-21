@@ -1,0 +1,30 @@
+# Zsh plugins pinned to a release tag or commit and verified by checksum.
+# To upgrade: change the URL, update the checksum, then run `chezmoi apply`.
+#   curl -fsSL <url> | shasum -a 256
+
+[".zsh/plugins/zsh-autosuggestions"]
+    type = "archive"
+    url = "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/tags/v0.7.1.tar.gz"
+    exact = true
+    stripComponents = 1
+    checksum.sha256 = "0df7affff21cd87ed298e6a3970ed08a1dd66a6efa676454ee5b091ad503badf"
+
+[".zsh/plugins/zsh-completions"]
+    type = "archive"
+    url = "https://github.com/zsh-users/zsh-completions/archive/refs/tags/0.36.0.tar.gz"
+    exact = true
+    stripComponents = 1
+    checksum.sha256 = "5aa68be2999a7be2eb56de8e4acff8f3bba4a66b9acbb233752536857408fb2e"
+
+[".zsh/plugins/fsh"]
+    type = "archive"
+    url = "https://github.com/zdharma-continuum/fast-syntax-highlighting/archive/4672ad5dd9ad68a7effc1476d65afb7c584ce2b3.tar.gz"
+    exact = true
+    stripComponents = 1
+    checksum.sha256 = "b3cc42c674cb7fc84c225b8a36eb9c45a9f965348e235e7b3bc97c74e58c5299"
+
+# Only the git alias plugin from Oh My Zsh is used; the framework itself is not installed.
+[".zsh/plugins/git/git.plugin.zsh"]
+    type = "file"
+    url = "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/88659ed193cd1af0ba3679c9de3c85f21003f3d4/plugins/git/git.plugin.zsh"
+    checksum.sha256 = "5da590f18a2271b6121ada6073eeee07e1a732690229f581303629a55d4a80aa"

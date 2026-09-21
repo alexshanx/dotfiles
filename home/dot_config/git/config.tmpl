@@ -16,7 +16,7 @@
   dc = "!git dh | pbcopy"
   dh = diff HEAD
   dl = "-c diff.external=difft log -p --ext-diff"
-  ds = "!f() { git dh > /tmp/git_diff_head_$(date +\"%Y%m%d_%H%M_%S\").diff; }; f"
+  ds = "!f() { f=$(mktemp -t git_diff_head) && git dh > \"$f\" && echo \"$f\"; }; f"
 
   ### log ###
   lg = log --graph --abbrev-commit --date=short --boundary --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %Cblue[%cn]%Creset'
@@ -69,7 +69,7 @@
   path = gitlab.local.config
 {{- end }}
 
-[includeIf "gitdir:~/Code/"]
+[includeIf "gitdir:~/Desktop/codes/"]
   path = fsmonitor.config
 
 [pager]

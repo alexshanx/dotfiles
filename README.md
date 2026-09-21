@@ -16,7 +16,7 @@ During setup:
 - Approve the Xcode Command Line Tools dialog if it appears.
 - Enter your administrator password if Homebrew requests it.
 
-The installer handles chezmoi, Homebrew packages (including the Codex app), shell plugins, development tools, Claude Code, managed files, and macOS preferences. When it finishes:
+The installer handles chezmoi, Homebrew packages (including the Codex app), Zsh plugins, development tools, Claude Code, managed files, and macOS preferences. When it finishes:
 
 ```bash
 exec zsh
@@ -150,6 +150,10 @@ ref deletions skip scanning. Missing Gitleaks or a scanner error blocks the
 operation. Hooks can be bypassed with Git options or configuration changes;
 they do not constrain an agent allowed to disable them.
 
+`.gitleaksignore` lists historical findings that were reviewed and judged
+harmless, by fingerprint; without it a full-history scan blocks every new branch
+or tag. Add an entry only after reading the flagged commit.
+
 `.gitleaks.toml` extends the default secret rules with personal absolute home
 paths and local-only credential/application files. These rules cannot detect all
 personal information or arbitrary prose. Reports redact detected values; do not
@@ -168,7 +172,22 @@ GitHub blocks supported secret patterns; these settings do not upload this
 repository's custom privacy rules to GitHub. CI runs after upload and cannot
 prevent the initial disclosure of a secret.
 
-## 5. Manage Personal AI Skills
+## 5. Zsh Plugins
+
+Zsh plugins are chezmoi externals declared in
+[`home/.chezmoiexternal.toml`](home/.chezmoiexternal.toml). Each one is pinned to
+a release tag or commit and verified with a SHA-256 checksum, so a moved tag or a
+compromised upstream fails `chezmoi apply` instead of running in every shell.
+Oh My Zsh is not installed; only its `git` alias plugin is fetched as a single file.
+
+To upgrade a plugin, change its URL, recompute the checksum, and apply:
+
+```bash
+curl -fsSL <url> | shasum -a 256
+chezmoi apply ~/.zsh/plugins
+```
+
+## 6. Manage Personal AI Skills
 
 `~/.agents/skills` is the only source of truth. Claude receives one compatibility symlink per skill under `~/.claude/skills`.
 
@@ -182,7 +201,7 @@ chezmoi add ~/.claude/skills/<skill-name>
 
 Restart the relevant AI tool after adding or renaming a skill.
 
-## 6. Resolve Local Changes
+## 7. Resolve Local Changes
 
 When chezmoi reports that a destination changed since it was last written:
 
@@ -190,7 +209,7 @@ When chezmoi reports that a destination changed since it was last written:
 2. Keep the local version with `chezmoi re-add <path>`, or restore the managed version with `chezmoi apply <path>`.
 3. Use `chezmoi apply --force <path>` only after reviewing that specific target; avoid forcing the entire repository.
 
-## 7. Automated Toolchain Updates
+## 8. Automated Toolchain Updates
 
 [Renovate](https://docs.renovatebot.com/) updates the tools pinned in [`~/.proto/.prototools`](home/dot_proto/dot_prototools). Install the Renovate GitHub App for this repository once; [`renovate.json`](renovate.json) handles the rest. Other repository dependencies, including Homebrew packages and GitHub Actions, stay outside this automation.
 
@@ -214,4 +233,4 @@ chezmoi update
 
 Useful inspection commands: `chezmoi status`, `chezmoi diff`, `chezmoi managed`, `chezmoi data`, and `chezmoi cd`.
 
-GitHub Actions checks shell scripts, Zsh syntax, and a Linux apply/verify dry-run. Licensed under the [MIT License](LICENSE).
+GitHub Actions scans the full history with Gitleaks, checks shell scripts and Zsh syntax, and runs a Linux apply/verify dry-run. Licensed under the [MIT License](LICENSE).

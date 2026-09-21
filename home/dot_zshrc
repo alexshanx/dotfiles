@@ -52,7 +52,6 @@ export PROTO_HOME="$HOME/.proto"
 export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 export STARSHIP_CACHE="$HOME/.config/starship/cache"
 export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
-export UPDATE_ZSH_DAYS=7
 ## This speed up zsh-autosuggestions by a lot
 export ZSH_AUTOSUGGEST_USE_ASYNC='true'
 [[ $(command -v chromium) ]] && export PUPPETEER_EXECUTABLE_PATH=$(command -v chromium)
@@ -104,7 +103,7 @@ hash -d downloads="$HOME/Downloads"
 hash -d download="$HOME/Downloads"
 hash -d documents="$HOME/Documents"
 hash -d document="$HOME/Documents"
-hash -d code="$HOME/Code"
+hash -d code="$HOME/Desktop/codes"
 hash -d applications="/Applications"
 hash -d application="/Applications"
 
@@ -196,6 +195,13 @@ zstyle :bracketed-paste-magic paste-finish pastefinish
 # https://github.com/zsh-users/zsh-autosuggestions/issues/351
 ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(bracketed-paste accept-line)
 ZSH_AUTOSUGGEST_MANUAL_REBIND=""
+
+# Oh My Zsh's git plugin expects this helper from the framework's lib/git.zsh
+git_current_branch() {
+  local ref
+  ref=$(git symbolic-ref --quiet HEAD 2>/dev/null) || ref=$(git rev-parse --short HEAD 2>/dev/null) || return
+  echo "${ref#refs/heads/}"
+}
 
 # Source plugins and configurations
 [[ -f "$HOME/.zsh/plugins/git/git.plugin.zsh" ]] && source "$HOME/.zsh/plugins/git/git.plugin.zsh"
