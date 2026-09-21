@@ -81,11 +81,27 @@ exit
 
 The initial Git email and work-machine choice are stored in `~/.config/chezmoi/chezmoi.toml`; inspect them with `chezmoi data`.
 
-On a work machine, create `~/.config/git/gitlab.local.config` for repositories under `~/Code/GitLab`:
+Repositories live under `~/Desktop/codes`. Commits there are signed with the SSH
+key `~/.ssh/id_ed25519`; upload its public key to GitHub once as a signing key so
+commits show as verified:
+
+```bash
+gh auth refresh -h github.com -s admin:ssh_signing_key
+gh ssh-key add ~/.ssh/id_ed25519.pub --type signing --title "$(hostname -s)"
+```
+
+On a work machine, create `~/.config/git/gitlab.local.config` for repositories under `~/Desktop/codes/gitlab`:
 
 ```ini
 [user]
   email = you@company.com
+```
+
+The `prototools` Git filter strips pinned tool versions from a project's
+`.prototools` on commit. It is opt-in: enable it in one repository with
+
+```bash
+echo '.prototools filter=prototools' >> .git/info/attributes
 ```
 
 Put secrets and machine-only environment variables in `~/.zshrc.local`. It is loaded automatically and ignored by chezmoi:

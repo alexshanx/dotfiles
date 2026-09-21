@@ -33,7 +33,6 @@
   autosetuprebase = always
 
 [core]
-  attributesFile = ~/.config/git/attributes
   autocrlf = input
   editor = vim
   quotepath = false
@@ -55,22 +54,21 @@
   smudge = git-lfs smudge -- %f
   required = true
 
+# Opt in per repository with `.prototools filter=prototools` in .git/info/attributes
 [filter "prototools"]
   clean = sed -E '/^(bun|deno|node|pnpm|proto|yarn) = /d'
   smudge = cat
   required = true
 
-[includeIf "gitdir:~/Code/GitHub/"]
+[includeIf "gitdir:~/Desktop/codes/"]
   path = github.config
+  path = fsmonitor.config
 
 {{- if .is_work }}
-[includeIf "gitdir:~/Code/GitLab/"]
+[includeIf "gitdir:~/Desktop/codes/gitlab/"]
   path = gitlab.config
   path = gitlab.local.config
 {{- end }}
-
-[includeIf "gitdir:~/Desktop/codes/"]
-  path = fsmonitor.config
 
 [pager]
   difftool = true
