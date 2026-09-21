@@ -54,12 +54,6 @@
   smudge = git-lfs smudge -- %f
   required = true
 
-# Opt in per repository with `.prototools filter=prototools` in .git/info/attributes
-[filter "prototools"]
-  clean = sed -E '/^(bun|deno|node|pnpm|proto|yarn) = /d'
-  smudge = cat
-  required = true
-
 [includeIf "gitdir:~/Desktop/codes/"]
   path = github.config
   path = fsmonitor.config

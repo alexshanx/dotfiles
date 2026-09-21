@@ -97,13 +97,6 @@ On a work machine, create `~/.config/git/gitlab.local.config` for repositories u
   email = you@company.com
 ```
 
-The `prototools` Git filter strips pinned tool versions from a project's
-`.prototools` on commit. It is opt-in: enable it in one repository with
-
-```bash
-echo '.prototools filter=prototools' >> .git/info/attributes
-```
-
 Put secrets and machine-only environment variables in `~/.zshrc.local`. It is loaded automatically and ignored by chezmoi:
 
 ```bash
