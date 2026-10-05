@@ -224,7 +224,7 @@ When chezmoi reports that a destination changed since it was last written:
 
 Renovate checks during the first three days of each month (Asia/Shanghai), waits 14 days after a release, groups the proto-managed tools into one pull request, and merges it after CI passes. Node.js stays on its configured major release line so that an odd-numbered, non-LTS release is not selected automatically. Failed CI leaves the pull request open for investigation.
 
-Once Renovate runs, it opens a **Dependency Dashboard** issue. If that issue is missing, Renovate has never processed the repository: check that the [Renovate app](https://github.com/apps/renovate) is installed and has access to this repository, then review its job logs at [developer.mend.io](https://developer.mend.io/). Tick the dashboard's manual-run checkbox to trigger a run outside the schedule.
+In the [Mend developer portal](https://developer.mend.io/github/alexshanx/dotfiles), **Dependency Updates (Renovate)** must be set to **Interactive**. In **Silent** mode Renovate still scans on schedule and lists updates as pending approval, but creates no Dependency Dashboard issue, branches, or pull requests. In Interactive mode it opens a **Dependency Dashboard** issue; tick an update there, or use the portal's **Create/Rebase**, to open its pull request outside the schedule.
 
 ### Applying Updates on the Mac
 
