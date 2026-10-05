@@ -1,0 +1,94 @@
+#!/bin/sh
+# Bring this machine up to date with the dotfiles repository and upstream tools:
+#   1. Pull the dotfiles (fast-forward only) and apply them, which picks up
+#      Renovate-merged ~/.proto/.prototools and Brewfile changes.
+#   2. Upgrade proto itself, install every pinned proto tool, clean stale ones.
+#   3. Upgrade Homebrew formulae (casks are left to their own updaters).
+#
+# Runs weekly from the io.github.alexshanx.dotfiles-update LaunchAgent; it can
+# also be run by hand. Each step runs even if an earlier one fails; failures are
+# summarized at the end and in a macOS notification.
+
+set -u
+
+export PROTO_HOME="${PROTO_HOME:-${HOME}/.proto}"
+export PATH="${PROTO_HOME}/shims:${PROTO_HOME}/bin:${HOME}/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+LOCK_DIR="${TMPDIR:-/tmp}/dotfiles-update.lock"
+FAILED_STEPS=""
+
+log() {
+  printf '[%s] [%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$1" "$2"
+}
+
+notify() {
+  if command -v osascript >/dev/null 2>&1; then
+    osascript -e "display notification \"$1\" with title \"Dotfiles update\"" >/dev/null 2>&1 || true
+  fi
+}
+
+step() {
+  name="$1"
+  shift
+  log "INFO" "${name}: $*"
+  if "$@"; then
+    log "INFO" "${name}: done"
+  else
+    log "ERROR" "${name}: failed"
+    FAILED_STEPS="${FAILED_STEPS} ${name}"
+  fi
+}
+
+if ! mkdir "${LOCK_DIR}" 2>/dev/null; then
+  log "WARNING" "Another update is running (${LOCK_DIR}); exiting"
+  exit 0
+fi
+trap 'rmdir "${LOCK_DIR}"' EXIT
+
+# launchd runs a missed job right after wake, often before the network is up.
+attempt=1
+until curl -sS --max-time 10 -o /dev/null https://github.com; do
+  if [ "${attempt}" -ge 10 ]; then
+    log "WARNING" "Network unavailable; skipping this run"
+    exit 0
+  fi
+  attempt=$((attempt + 1))
+  sleep 30
+done
+
+log "INFO" "Starting update"
+
+if command -v chezmoi >/dev/null 2>&1; then
+  # --ff-only refuses to merge diverged history; --no-tty makes apply fail
+  # instead of prompting when a managed file was edited locally.
+  step "dotfiles-pull" chezmoi git -- pull --ff-only
+  step "dotfiles-apply" chezmoi apply --no-tty
+else
+  log "WARNING" "chezmoi not found; skipping dotfiles"
+fi
+
+if command -v proto >/dev/null 2>&1; then
+  step "proto-upgrade" proto upgrade --yes
+  # global mode reads only ~/.proto/.prototools, independent of the working directory.
+  step "proto-install" proto install --config-mode global --yes
+  step "proto-clean" proto clean --yes
+else
+  log "WARNING" "proto not found; skipping toolchain"
+fi
+
+if command -v brew >/dev/null 2>&1; then
+  step "brew-update" brew update
+  step "brew-upgrade" brew upgrade --formula
+  step "brew-cleanup" brew cleanup
+else
+  log "WARNING" "Homebrew not found; skipping packages"
+fi
+
+if [ -n "${FAILED_STEPS}" ]; then
+  log "ERROR" "Finished with failures:${FAILED_STEPS}"
+  notify "Failed:${FAILED_STEPS}. See ~/Library/Logs/dotfiles-update.log"
+  exit 1
+fi
+
+log "INFO" "Finished successfully"
+notify "Dotfiles, proto toolchain, and Homebrew formulae are up to date"

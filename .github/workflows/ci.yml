@@ -51,6 +51,9 @@ jobs:
       - name: ShellCheck Git protection hooks
         run: shellcheck .githooks/pre-commit .githooks/pre-push
 
+      - name: ShellCheck dotfiles-update
+        run: shellcheck home/dot_local/bin/executable_dotfiles-update
+
       - name: ShellCheck chezmoi scripts
         run: |
           set -e

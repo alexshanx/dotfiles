@@ -222,12 +222,26 @@ When chezmoi reports that a destination changed since it was last written:
 
 [Renovate](https://docs.renovatebot.com/) updates the tools pinned in [`~/.proto/.prototools`](home/dot_proto/dot_prototools). Install the Renovate GitHub App for this repository once; [`renovate.json`](renovate.json) handles the rest. Other repository dependencies, including Homebrew packages and GitHub Actions, stay outside this automation.
 
-Renovate checks on the first day of each month, waits 14 days after a release, groups the proto-managed tools into one pull request, and merges it after CI passes. Node.js stays on its configured major release line so that an odd-numbered, non-LTS release is not selected automatically. Failed CI leaves the pull request open for investigation.
+Renovate checks during the first three days of each month (Asia/Shanghai), waits 14 days after a release, groups the proto-managed tools into one pull request, and merges it after CI passes. Node.js stays on its configured major release line so that an odd-numbered, non-LTS release is not selected automatically. Failed CI leaves the pull request open for investigation.
 
-After an automated update is merged, apply it locally with the normal sync command:
+Once Renovate runs, it opens a **Dependency Dashboard** issue. If that issue is missing, Renovate has never processed the repository: check that the [Renovate app](https://github.com/apps/renovate) is installed and has access to this repository, then review its job logs at [developer.mend.io](https://developer.mend.io/). Tick the dashboard's manual-run checkbox to trigger a run outside the schedule.
+
+### Applying Updates on the Mac
+
+The `io.github.alexshanx.dotfiles-update` LaunchAgent runs
+[`~/.local/bin/dotfiles-update`](home/dot_local/bin/executable_dotfiles-update)
+every Monday at 10:30. A run missed while the Mac sleeps starts on wake; a Mac that is shut down skips that week. The script:
+
+1. Pulls this repository with `--ff-only` and runs `chezmoi apply --no-tty`, picking up merged Renovate and Brewfile changes. Diverged history or a locally edited managed file fails this step instead of overwriting anything.
+2. Runs `proto upgrade`, installs every tool pinned in `~/.proto/.prototools`, and runs `proto clean` to remove tools unused for 30 days.
+3. Runs `brew update`, `brew upgrade --formula`, and `brew cleanup`. Casks are left to their own updaters, because cask upgrades may need a password or a running app to quit.
+
+Failures are reported in a notification and logged to `~/Library/Logs/dotfiles-update.log`. Run an update immediately, or inspect the agent:
 
 ```bash
-chezmoi update
+dotfiles-update
+launchctl kickstart "gui/$(id -u)/io.github.alexshanx.dotfiles-update"
+launchctl print "gui/$(id -u)/io.github.alexshanx.dotfiles-update"
 ```
 
 ## Repository Map
@@ -239,6 +253,7 @@ chezmoi update
 | [home](home) | Files mapped into the home directory |
 | [home/.chezmoiscripts](home/.chezmoiscripts) | Bootstrap and lifecycle automation |
 | [renovate.json](renovate.json) | Monthly proto toolchain updates |
+| [home/dot_local/bin/executable_dotfiles-update](home/dot_local/bin/executable_dotfiles-update) | Weekly local update run by a LaunchAgent |
 
 Useful inspection commands: `chezmoi status`, `chezmoi diff`, `chezmoi managed`, `chezmoi data`, and `chezmoi cd`.
 
