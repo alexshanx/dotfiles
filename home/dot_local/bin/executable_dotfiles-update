@@ -1,30 +1,23 @@
 #!/bin/sh
 # Bring this machine up to date with the dotfiles repository and upstream tools:
-#   1. Pull the dotfiles (fast-forward only) and apply them, which picks up
-#      Renovate-merged ~/.proto/.prototools and Brewfile changes.
+#   1. Pull the dotfiles (fast-forward only), show the incoming commits and the
+#      pending changes, and apply them only after confirmation. This picks up
+#      reviewed Renovate updates to ~/.proto/.prototools and Brewfile changes.
 #   2. Upgrade proto itself, install every pinned proto tool, clean stale ones.
 #   3. Upgrade Homebrew formulae (casks are left to their own updaters).
 #
-# Runs weekly from the io.github.alexshanx.dotfiles-update LaunchAgent; it can
-# also be run by hand. Each step runs even if an earlier one fails; failures are
-# summarized at the end and in a macOS notification.
+# Run it by hand from a terminal. Each step runs even if an earlier one fails;
+# failures are summarized at the end.
 
 set -u
 
 export PROTO_HOME="${PROTO_HOME:-${HOME}/.proto}"
-export PATH="${PROTO_HOME}/shims:${PROTO_HOME}/bin:${HOME}/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="${PROTO_HOME}/shims:${PROTO_HOME}/bin:${PATH}"
 
-LOCK_DIR="${TMPDIR:-/tmp}/dotfiles-update.lock"
 FAILED_STEPS=""
 
 log() {
-  printf '[%s] [%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$1" "$2"
-}
-
-notify() {
-  if command -v osascript >/dev/null 2>&1; then
-    osascript -e "display notification \"$1\" with title \"Dotfiles update\"" >/dev/null 2>&1 || true
-  fi
+  printf '[%s] [%s] %s\n' "$(date '+%H:%M:%S')" "$1" "$2"
 }
 
 step() {
@@ -39,30 +32,48 @@ step() {
   fi
 }
 
-if ! mkdir "${LOCK_DIR}" 2>/dev/null; then
-  log "WARNING" "Another update is running (${LOCK_DIR}); exiting"
-  exit 0
-fi
-trap 'rmdir "${LOCK_DIR}"' EXIT
+confirm() {
+  printf '%s [y/N] ' "$1"
+  read -r answer </dev/tty || return 1
+  case "${answer}" in
+    [yY] | [yY][eE][sS]) return 0 ;;
+    *) return 1 ;;
+  esac
+}
 
-# launchd runs a missed job right after wake, often before the network is up.
-attempt=1
-until curl -sS --max-time 10 -o /dev/null https://github.com; do
-  if [ "${attempt}" -ge 10 ]; then
-    log "WARNING" "Network unavailable; skipping this run"
-    exit 0
+update_dotfiles() {
+  before="$(chezmoi git -- rev-parse HEAD)" || return 1
+  chezmoi git -- pull --ff-only || return 1
+  after="$(chezmoi git -- rev-parse HEAD)" || return 1
+
+  if [ "${before}" != "${after}" ]; then
+    log "INFO" "Incoming commits:"
+    chezmoi git -- log --oneline "${before}..${after}"
   fi
-  attempt=$((attempt + 1))
-  sleep 30
-done
+
+  if [ -z "$(chezmoi diff --no-pager)" ]; then
+    log "INFO" "Dotfiles already applied"
+    return 0
+  fi
+
+  # Shows changed files and the scripts that apply would run.
+  chezmoi diff
+  if ! confirm "Apply these dotfile changes?"; then
+    log "WARNING" "Dotfile changes left unapplied"
+    return 0
+  fi
+  chezmoi apply
+}
+
+if [ ! -t 0 ] || [ ! -t 1 ]; then
+  log "ERROR" "Run dotfiles-update from an interactive terminal"
+  exit 1
+fi
 
 log "INFO" "Starting update"
 
 if command -v chezmoi >/dev/null 2>&1; then
-  # --ff-only refuses to merge diverged history; --no-tty makes apply fail
-  # instead of prompting when a managed file was edited locally.
-  step "dotfiles-pull" chezmoi git -- pull --ff-only
-  step "dotfiles-apply" chezmoi apply --no-tty
+  step "dotfiles" update_dotfiles
 else
   log "WARNING" "chezmoi not found; skipping dotfiles"
 fi
@@ -86,9 +97,7 @@ fi
 
 if [ -n "${FAILED_STEPS}" ]; then
   log "ERROR" "Finished with failures:${FAILED_STEPS}"
-  notify "Failed:${FAILED_STEPS}. See ~/Library/Logs/dotfiles-update.log"
   exit 1
 fi
 
 log "INFO" "Finished successfully"
-notify "Dotfiles, proto toolchain, and Homebrew formulae are up to date"

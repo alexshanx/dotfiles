@@ -24,15 +24,13 @@
   },
   "packageRules": [
     {
-      "description": "Group and automerge proto toolchain updates",
+      "description": "Group proto toolchain updates into one pull request for manual review",
       "matchManagers": [
         "proto"
       ],
       "groupName": "proto toolchain",
       "groupSlug": "proto-toolchain",
-      "automerge": true,
-      "automergeType": "pr",
-      "platformAutomerge": false
+      "automerge": false
     },
     {
       "description": "Keep Node.js on the configured release line",
