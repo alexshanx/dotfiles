@@ -28,8 +28,3 @@
 
 # Cache and runtime files
 .config/starship/cache/
-
-# macOS-only LaunchAgents
-{{ if ne .chezmoi.os "darwin" }}
-Library
-{{ end }}

@@ -1,0 +1,12 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/sh
+# Remove the former weekly dotfiles-update LaunchAgent (run once).
+# Updates are now run by hand with dotfiles-update after reviewing the diff.
+
+set -eu
+
+label="io.github.alexshanx.dotfiles-update"
+
+launchctl bootout "gui/$(id -u)/${label}" 2>/dev/null || true
+rm -f "${HOME}/Library/LaunchAgents/${label}.plist"
+{{- end }}
