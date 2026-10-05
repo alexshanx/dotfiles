@@ -3,11 +3,13 @@
 #   1. Pull the dotfiles (fast-forward only), show the incoming commits and the
 #      pending changes, and apply them only after confirmation. This picks up
 #      reviewed Renovate updates to ~/.proto/.prototools and Brewfile changes.
-#   2. Upgrade proto itself, install every pinned proto tool, clean stale ones.
-#   3. Upgrade Homebrew formulae (casks are left to their own updaters).
+#   2. Show the proto status, then upgrade proto itself and install every
+#      pinned proto tool after confirmation; optionally clean stale tools.
+#   3. Show outdated Homebrew formulae and upgrade them after confirmation
+#      (casks are left to their own updaters).
 #
-# Run it by hand from a terminal. Each step runs even if an earlier one fails;
-# failures are summarized at the end.
+# Run it by hand from a terminal. Nothing is upgraded without a "y" answer.
+# Each step runs even if an earlier one fails; failures are summarized at the end.
 
 set -u
 
@@ -65,6 +67,44 @@ update_dotfiles() {
   chezmoi apply
 }
 
+update_proto() {
+  # Pinned versions come from the reviewed ~/.proto/.prototools.
+  proto status --config-mode global
+  # proto itself cannot be pinned; this shows the latest release.
+  proto upgrade --check || true
+  if ! confirm "Upgrade proto and install the pinned tools?"; then
+    log "WARNING" "proto toolchain left unchanged"
+    return 0
+  fi
+  proto upgrade --yes || return 1
+  # global mode reads only ~/.proto/.prototools, independent of the working directory.
+  proto install --config-mode global --yes || return 1
+
+  if confirm "Remove proto tools and plugins unused for 30 days?"; then
+    proto clean --yes || return 1
+  fi
+}
+
+update_brew() {
+  brew update || return 1
+  outdated="$(brew outdated --formula --verbose)" || return 1
+  if [ -z "${outdated}" ]; then
+    log "INFO" "Homebrew formulae already up to date"
+    return 0
+  fi
+
+  printf '%s\n' "${outdated}"
+  if [ "$(uname -m)" = "x86_64" ]; then
+    log "WARNING" "Homebrew no longer builds bottles for Intel Macs; upgrades and new dependencies may compile from source and take hours"
+  fi
+  if ! confirm "Upgrade these Homebrew formulae and their dependencies?"; then
+    log "WARNING" "Homebrew formulae left unchanged"
+    return 0
+  fi
+  brew upgrade --formula || return 1
+  brew cleanup
+}
+
 if [ ! -t 0 ] || [ ! -t 1 ]; then
   log "ERROR" "Run dotfiles-update from an interactive terminal"
   exit 1
@@ -79,18 +119,13 @@ else
 fi
 
 if command -v proto >/dev/null 2>&1; then
-  step "proto-upgrade" proto upgrade --yes
-  # global mode reads only ~/.proto/.prototools, independent of the working directory.
-  step "proto-install" proto install --config-mode global --yes
-  step "proto-clean" proto clean --yes
+  step "proto" update_proto
 else
   log "WARNING" "proto not found; skipping toolchain"
 fi
 
 if command -v brew >/dev/null 2>&1; then
-  step "brew-update" brew update
-  step "brew-upgrade" brew upgrade --formula
-  step "brew-cleanup" brew cleanup
+  step "brew" update_brew
 else
   log "WARNING" "Homebrew not found; skipping packages"
 fi

@@ -243,10 +243,10 @@ dotfiles-update
 ```
 
 1. Pulls this repository with `--ff-only`, lists the incoming commits, and shows `chezmoi diff`, including the scripts that apply would run. Changes are applied only after you answer `y`.
-2. Runs `proto upgrade`, installs every tool pinned in `~/.proto/.prototools`, and runs `proto clean` to remove tools unused for 30 days. `proto upgrade` installs the latest proto release immediately; the 14-day delay applies only to Renovate-managed tools.
-3. Runs `brew update`, `brew upgrade --formula`, and `brew cleanup`. Casks are left to their own updaters, because cask upgrades may need a password or a running app to quit.
+2. Shows `proto status` and the latest proto release, then, after you answer `y`, runs `proto upgrade` and installs every tool pinned in `~/.proto/.prototools`. A separate prompt offers `proto clean`, which removes tools unused for 30 days. `proto upgrade` installs the latest proto release immediately; the 14-day delay applies only to Renovate-managed tools.
+3. Runs `brew update`, lists outdated formulae, and after you answer `y` runs `brew upgrade --formula` and `brew cleanup`. Homebrew no longer builds bottles for Intel Macs, so there an upgrade may compile formulae and new dependencies from source for hours. Casks are left to their own updaters, because cask upgrades may need a password or a running app to quit.
 
-Each step runs even if an earlier one fails, and failures are summarized at the end.
+Nothing is upgraded without a `y` answer. Each step runs even if an earlier one fails, and failures are summarized at the end.
 
 ## Repository Map
 
