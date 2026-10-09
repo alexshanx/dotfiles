@@ -13,6 +13,7 @@ brew "starship"
 brew "direnv"
 brew "gnupg"
 brew "pinentry-mac"
+brew "ffmpeg" # audio transcoding for Shan Agent transcription
 
 # Mac App Store
 mas "Xcode", id: 497799835
