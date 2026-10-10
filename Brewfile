@@ -14,6 +14,7 @@ brew "direnv"
 brew "gnupg"
 brew "pinentry-mac"
 brew "ffmpeg" # audio transcoding for Shan Agent transcription
+brew "cloudflared" # dev tunnel for Shan Agent Slack and GitHub integrations
 
 # Mac App Store
 mas "Xcode", id: 497799835
